@@ -28,7 +28,7 @@ class HTMLParser:
         content = await page.content()
         self.page = BeautifulSoup(content, "html.parser")
 
-    async def get_all_urls(self, url: str = None):
+    async def get_all_urls(self, url: str = None, base_url: str = None):
         elements = list()
         url = url or str(self.config["base"]["url"])
         await self.get_page(url)
@@ -41,8 +41,9 @@ class HTMLParser:
             text = element.text.strip()
             link = element.get("href")
             if text and link:
-                if "https" not in link:
-                    link = "https://www.masta-travel-health.com/" + link
+                if not link.startswith("http"):
+                    base_url = base_url or str(self.config["base"]["url"])
+                    link = base_url + link
                 self.urls[text] = link
 
     async def get_page_content(self, config: Dict[str, Union[list, str, dict]]):
