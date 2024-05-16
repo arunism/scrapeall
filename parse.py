@@ -1,5 +1,5 @@
-import asyncio
 from itertools import chain
+from typing import Dict, Union
 from omegaconf import OmegaConf
 from pyppeteer import launch
 from bs4 import BeautifulSoup
@@ -44,3 +44,34 @@ class HTMLParser:
                 if "https" not in link:
                     link = "https://www.masta-travel-health.com/" + link
                 self.urls[text] = link
+
+    async def get_page_content(self, config: Dict[str, Union[list, str, dict]]):
+        if "path" in config:
+            data = ""
+            for path in config.get("path"):
+                if path and config.get("terminator"):
+                    element = self.page.select_one(path)
+                    terminating_element = self.page.select_one(config.get("terminator"))
+                    while element:
+                        if element == terminating_element:
+                            break
+                        data += "\n\n" + element.text.strip()
+                        element = element.find_next()
+
+                elif path and not config.get("terminator"):
+                    for element in self.page.select(path):
+                        data += "\n\n" + element.text.strip()
+            return data.strip()
+        elif isinstance(config, dict):
+            data = dict()
+            for key, value in config.items():
+                data[key] = await self.get_page_content(value)
+            return data
+        else:
+            return ""
+
+    async def get_content(self, url: str):
+        self.data = dict()
+        await self.get_page(url)
+        for key, value in self.config.get("content").items():
+            self.data[key] = await self.get_page_content(value)
