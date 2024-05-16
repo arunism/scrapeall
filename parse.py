@@ -1,5 +1,6 @@
 from itertools import chain
 from typing import Dict, Union
+import requests
 from omegaconf import OmegaConf
 from pyppeteer import launch
 from bs4 import BeautifulSoup
@@ -23,9 +24,19 @@ class HTMLParser:
             await self.browser.close()
 
     async def get_page(self, url: str):
-        page = await self.browser.newPage()
-        await page.goto(url)
-        content = await page.content()
+        if self.browser:
+            page = await self.browser.newPage()
+            await page.goto(url)
+            content = await page.content()
+        else:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                content = response.content.decode("utf-8")
+            else:
+                response.raise_for_status()
         self.page = BeautifulSoup(content, "html.parser")
 
     async def get_all_urls(self, url: str = None, base_url: str = None):
