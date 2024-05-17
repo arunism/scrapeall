@@ -1,5 +1,6 @@
 from itertools import chain
 from typing import Dict, Union
+from urllib.parse import urlparse
 import requests
 from omegaconf import OmegaConf
 from pyppeteer import launch
@@ -53,7 +54,12 @@ class HTMLParser:
             link = element.get("href")
             if text and link:
                 if not link.startswith("http"):
-                    base_url = base_url or str(self.config["base"]["url"])
+                    base_url = (
+                        base_url
+                        or urlparse(self.config["base"]["url"])
+                        ._replace(path="")
+                        .geturl()
+                    )
                     link = base_url + link
                 self.urls[text] = link
 
