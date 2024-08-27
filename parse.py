@@ -1,18 +1,19 @@
 from itertools import chain
-from typing import Dict, Union
+from typing import Dict, UnionAny
 from urllib.parse import urlparse
+
 import requests
 from omegaconf import OmegaConf
 from pyppeteer import launch
 from bs4 import BeautifulSoup
 
 
-config = OmegaConf.load("config.yaml")
+# config = OmegaConf.load("config.yaml")
 
 
 class HTMLParser:
-    def __init__(self, vendor: str) -> None:
-        self.config = config[vendor].to_dict()
+    def __init__(self, vendor: str, config_path: str) -> None:
+        self.config = OmegaConf.load(config_path)[vendor].to_dict()
         self.browser = None
         self.page = None
         self.urls = dict()
