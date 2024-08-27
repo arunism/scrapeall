@@ -8,9 +8,6 @@ from pyppeteer import launch
 from bs4 import BeautifulSoup
 
 
-# config = OmegaConf.load("config.yaml")
-
-
 class HTMLParser:
     def __init__(self, vendor: str, config_path: str) -> None:
         config = OmegaConf.load(config_path)

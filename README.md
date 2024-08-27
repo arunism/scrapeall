@@ -47,6 +47,8 @@ import asyncio
 
 from tqdm import tqdm
 
+from scrapeall.parse import HTMLParser
+
 
 async def main(vendor: str, config_path: str):
     data = dict()
@@ -89,8 +91,8 @@ import asyncio
 
 from tqdm import tqdm
 
-from utils import save_data
-from parse import HTMLParser
+from scrapeall.utils import save_data
+from scrapeall.parse import HTMLParser
 
 
 async def main(vendor: str, config_path: str, output_file: str = ""):
