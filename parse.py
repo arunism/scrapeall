@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Dict, UnionAny
+from typing import Dict, Union, Any
 from urllib.parse import urlparse
 
 import requests
@@ -13,7 +13,8 @@ from bs4 import BeautifulSoup
 
 class HTMLParser:
     def __init__(self, vendor: str, config_path: str) -> None:
-        self.config = OmegaConf.load(config_path)[vendor].to_dict()
+        config = OmegaConf.load(config_path)
+        self.config = OmegaConf.to_container(config[vendor], resolve=True)
         self.browser = None
         self.page = None
         self.urls = dict()
