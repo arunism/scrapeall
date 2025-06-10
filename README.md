@@ -115,7 +115,7 @@ if __name__ == "__main__":
     VENDOR = "<YOUR_VENDOR_NAME>"
     CONFIG_PATH = "<PATH_TO_YOUR_YAML_FILE>"
     OUTPUT_FILE = "<PATH_TO_YOUR_JSON_FILE>"
-    data = asyncio.run(main(VENDOR, CONFIG, OUTPUT_FILE))
+    data = asyncio.run(main(VENDOR, CONFIG_PATH, OUTPUT_FILE))
 ```
 
 > Remember: **YOUR_VENDOR_NAME** should match one in the **<CONFIG_PATH>.yaml** file.
