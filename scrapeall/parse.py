@@ -1,11 +1,11 @@
 from itertools import chain
-from typing import Dict, Union, Any
-from urllib.parse import urlparse
+from typing import Any, Dict, Union
+from urllib.parse import urljoin, urlparse
 
 import requests
+from bs4 import BeautifulSoup
 from omegaconf import OmegaConf
 from pyppeteer import launch
-from bs4 import BeautifulSoup
 
 
 class HTMLParser:
@@ -59,7 +59,7 @@ class HTMLParser:
                         ._replace(path="")
                         .geturl()
                     )
-                    link = base_url + link
+                link = urljoin(base_url, link)
                 self.urls[text] = link
 
     async def get_page_content(self, config: Dict[str, Union[list, str, dict]]):
