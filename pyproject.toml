@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scrapeall"
+version = "0.1.2"
+description = "Versatile web scraper for extracting data from both static HTML and JavaScript-rendered sites, using headless browsers for dynamic content."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  { name = "Arun Ghimire", email = "thearunism@gmail.com" }
+]
+urls = {Homepage = "https://github.com/arunism/scrapeall"}
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Operating System :: OS Independent"
+]
+dependencies = [
+  "pyppeteer==2.0.0",
+  "beautifulsoup4==4.12.3",
+  "requests==2.32.3",
+  "omegaconf==2.3.0"
+]
