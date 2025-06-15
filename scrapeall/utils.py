@@ -1,4 +1,11 @@
 import json
+from enum import Enum
+
+
+class ProcessMode(Enum):
+    URLS_ONLY = "urls"
+    TEXT_ONLY = "text"
+    BOTH = "both"
 
 
 def deserialize_python(value):

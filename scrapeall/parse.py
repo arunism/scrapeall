@@ -1,22 +1,27 @@
+import os
 from itertools import chain
-from typing import Any, Dict, Union
+from typing import Dict, Union
 from urllib.parse import urljoin, urlparse
 
+import httpx
 import requests
 from bs4 import BeautifulSoup
 from omegaconf import OmegaConf
 from pyppeteer import launch
 
+from scrapeall.utils import ProcessMode
+
 
 class HTMLParser:
-    def __init__(self, vendor: str, config_path: str) -> None:
+    def __init__(self, vendor: str, config_path: str, mode: ProcessMode) -> None:
         config = OmegaConf.load(config_path)
         self.config = OmegaConf.to_container(config[vendor], resolve=True)
         self.browser = None
         self.page = None
         self.urls = dict()
+        self.mode = mode
 
-    async def initialize_browser(self):
+    async def initialize_browser(self) -> None:
         self.browser = await launch(headless=True, args=["--no-sandbox"])
 
     async def close_browser(self) -> None:
@@ -62,7 +67,22 @@ class HTMLParser:
                 link = urljoin(base_url, link)
                 self.urls[text] = link
 
-    async def get_page_content(self, config: Dict[str, Union[list, str, dict]]):
+    async def download_file(self, url: str, filename: str):
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url)
+                response.raise_for_status()
+                os.makedirs(os.path.dirname(filename) or ".", exist_ok=True)
+                with open(filename, "wb") as f:
+                    f.write(response.content)
+            return True
+        except Exception as e:
+            print(f"Error downloading {url}: {e}")
+            return False
+
+    async def get_page_content(
+        self, url: str, config: Dict[str, Union[list, str, dict]]
+    ):
         if "path" in config:
             data = ""
             for path in config.get("path"):
@@ -72,17 +92,59 @@ class HTMLParser:
                     while element:
                         if element == terminating_element:
                             break
-                        data += "\n\n" + element.text.strip()
+                        if (
+                            self.mode == ProcessMode.URLS_ONLY
+                            or self.mode == ProcessMode.BOTH
+                        ):
+                            href = element.get("href")
+                            if href:
+                                if not href.startswith("http"):
+                                    link = urljoin(url, href)
+                                else:
+                                    link = href
+
+                                # filename = href.replace("/", "-")
+                                success = await self.download_file(link, href)
+                                if success:
+                                    print(f"Downloaded: {href}")
+                                    if self.mode == ProcessMode.URLS_ONLY:
+                                        continue
+                        if (
+                            self.mode == ProcessMode.TEXT_ONLY
+                            or self.mode == ProcessMode.BOTH
+                        ):
+                            data += "\n\n" + element.text.strip()
                         element = element.find_next()
 
                 elif path and not config.get("terminator"):
                     for element in self.page.select(path):
-                        data += "\n\n" + element.text.strip()
+                        if (
+                            self.mode == ProcessMode.URLS_ONLY
+                            or self.mode == ProcessMode.BOTH
+                        ):
+                            href = element.get("href")
+                            if href:
+                                if not href.startswith("http"):
+                                    link = urljoin(url, href)
+                                else:
+                                    link = href
+
+                                # filename = href.replace("/", "-")
+                                success = await self.download_file(link, href)
+                                if success:
+                                    print(f"Downloaded: {href}")
+                                    if self.mode == ProcessMode.URLS_ONLY:
+                                        continue
+                        if (
+                            self.mode == ProcessMode.TEXT_ONLY
+                            or self.mode == ProcessMode.BOTH
+                        ):
+                            data += "\n\n" + element.text.strip()
             return data.strip()
         elif isinstance(config, dict):
             data = dict()
             for key, value in config.items():
-                data[key] = await self.get_page_content(value)
+                data[key] = await self.get_page_content(url, value)
             return data
         else:
             return ""
@@ -91,4 +153,4 @@ class HTMLParser:
         self.data = dict()
         await self.get_page(url)
         for key, value in self.config.get("content").items():
-            self.data[key] = await self.get_page_content(value)
+            self.data[key] = await self.get_page_content(url, value)
