@@ -1,15 +1,15 @@
-import asyncio
-
 from tqdm import tqdm
 
-from scrapeall.utils import save_data
 from scrapeall.parse import HTMLParser
+from scrapeall.utils import ProcessMode, save_data
 
 
-async def main(vendor: str, config_path: str, output_file: str = ""):
+async def main(
+    vendor: str, config_path: str, MODE: ProcessMode, output_file: str = ""
+) -> dict:
     data = dict()
 
-    parser = HTMLParser(vendor, config_path)
+    parser = HTMLParser(vendor, config_path, MODE)
     await parser.initialize_browser()
     await parser.get_all_urls()
     for key, url in tqdm(parser.urls.items()):
