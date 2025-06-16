@@ -18,7 +18,7 @@ class HTMLParser:
         self.config = OmegaConf.to_container(config[vendor], resolve=True)
         self.browser = None
         self.page = None
-        self.urls = dict()
+        self.urls: dict = {}
         self.mode = mode
 
     async def initialize_browser(self) -> None:
@@ -67,7 +67,7 @@ class HTMLParser:
                 link = urljoin(base_url, link)
                 self.urls[text] = link
 
-    async def download_file(self, url: str, filename: str):
+    async def download_file(self, url: str, filename: str) -> bool:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(url)
@@ -141,16 +141,13 @@ class HTMLParser:
                         ):
                             data += "\n\n" + element.text.strip()
             return data.strip()
-        elif isinstance(config, dict):
-            data = dict()
-            for key, value in config.items():
-                data[key] = await self.get_page_content(url, value)
-            return data
-        else:
-            return ""
+        data = {}
+        for key, value in config.items():
+            data[key] = await self.get_page_content(url, value)
+        return data
 
     async def get_content(self, url: str):
-        self.data = dict()
+        self.data = {}
         await self.get_page(url)
         for key, value in self.config.get("content").items():
             self.data[key] = await self.get_page_content(url, value)
