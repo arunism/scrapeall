@@ -16,7 +16,8 @@ dependencies = [
   "pyppeteer==2.0.0",
   "beautifulsoup4==4.12.3",
   "requests==2.32.3",
-  "omegaconf==2.3.0"
+  "omegaconf==2.3.0",
+  "httpx>=0.28.1",
 ]
 
 urls = { Homepage = "https://github.com/arunism/scrapeall" }
